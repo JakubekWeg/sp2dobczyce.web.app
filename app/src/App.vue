@@ -41,8 +41,8 @@
     #app.dark {
         --back-background-color: #050505;
         --lighter-back-background-color: #171717;
-        --mid-background-color: #2a2828;
-        --front-background-color: #212020;
+        --mid-background-color: #2b2b2b;
+        --front-background-color: #212121;
         --font-primary-color: #dcddde;
         --font-secondary-color: #c9c9c9;
         --font-tetrary-color: #99999988;

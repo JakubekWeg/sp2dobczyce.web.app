@@ -52,8 +52,7 @@
     }
 
     nav > * {
-        margin: 0 16px;
-        padding: 0 24px;
+        min-width: 20%;
         display: flex;
         flex-direction: column;
         justify-content: space-evenly;
