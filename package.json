@@ -1,0 +1,7 @@
+{
+  "scripts": {
+    "serve": "concurrently \"tsc --watch true --project functions\" 'FIRESTORE_EMULATOR_HOST=\"localhost:8080\" firebase emulators:start' \"cd app && npm run serve\" \"sleep 10 && browser-sync start --proxy http://localhost:8888 --directory app\"",
+    "deploy": "cd app && npm run build && cd .. && rm public -r && mv app/dist public && firebase deploy",
+    "deploy:hosting": "cd app && npm run build && cd .. && rm public -r && mv app/dist public && firebase deploy --only hosting"
+  }
+}

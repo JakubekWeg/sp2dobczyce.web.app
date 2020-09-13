@@ -1,0 +1,40 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /substitutes/{id} {
+      allow read;
+    }
+
+    match /timetables/{id} {
+      allow read;
+    }
+
+    match /values/timetables {
+      allow read;
+    }
+
+    match /values/lucky-numbers {
+      allow read;
+    }
+
+    match /tokens/{token} {
+        function isValidContent() {
+            let data = request.resource.data;
+            //return data.keys().hasOnly(['class', 'surname', 'number', 'modified'])
+            //    && (!('class' in data) || data.class is string)
+            //    && (!('surname' in data) || data.surname is string)
+            //    && (!('number' in data) || data.number is int)
+            //    && data.modified == request.time;
+
+            return data.keys().hasOnly(['triggers', 'modified'])
+                && data.triggers is list
+                && data.triggers.size() <= 3
+                && data.modified == request.time;
+        }
+
+      allow create, update: if isValidContent();
+      allow delete;
+    }
+
+  }
+}
