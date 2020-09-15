@@ -1,5 +1,5 @@
 <template>
-    <div class="layout" :class="{asking: isAsking}">
+    <div class="layout" :class="{asking: isAsking}" v-if="permission !== 'not-supported'">
         <br>
         <NotificationIcon @click.native="requestPermission" :active="hasPermission"/>
         <h2 @click="requestPermission" v-if="!hasPermission">{{disabledNotificationText}}</h2>
@@ -15,6 +15,9 @@
 
         <router-link v-if="hasPermission" to="/ustawienia" class="link-to-settings">Ustawienia</router-link>
         <br>
+    </div>
+    <div v-else>
+        <p>Twoja przeglądarka nie obsługuje powiadomień, użyj innej</p>
     </div>
 </template>
 
@@ -57,7 +60,7 @@
                     body: 'Powiadomienia działają!',
                     ...payload.notification
                 };
-                new Notification(notification.title, notification);
+                new window.Notification(notification.title, notification);
             }
         },
         computed: {

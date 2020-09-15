@@ -56,7 +56,7 @@ firestore.enablePersistence().catch(e => console.error(e.message));
 
 let sending = false;
 export const sendTokenToServer = (onlyIfDifferent) => {
-    if (Notification.permission !== 'granted') return;
+    if ('Notification' in window && Notification.permission !== 'granted') return;
     if (sending) return;
     sending = true;
     (async () => {
@@ -92,7 +92,7 @@ export const sendTokenToServer = (onlyIfDifferent) => {
     })();
 };
 
-if (Notification.permission === 'granted') {
+if ('Notification' in window && Notification.permission === 'granted') {
     sendTokenToServer(true);
 }
 

@@ -29,7 +29,7 @@ const store = new VueX.Store({
         userNumber: +localStorage.getItem('number') || null,
         systemDarkTheme: darkThemeQuery.matches,
         userTheme: localStorage.getItem('theme') || null,
-        notificationPermission: Notification.permission,
+        notificationPermission: 'Notification' in window ? Notification.permission : 'not-supported',
         installEvent: null,
     },
     mutations: {
@@ -39,6 +39,7 @@ const store = new VueX.Store({
             state.installEvent = event;
         },
         updateNotificationPermission(state) {
+            state.notificationPermission = 'not-supported'
             if (state.notificationPermission === Notification.permission) return;
             state.notificationPermission = Notification.permission;
             sendTokenToServer();

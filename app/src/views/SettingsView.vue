@@ -36,7 +36,8 @@
         <Preference icon="notifications"
                     :value="notificationsValue"
                     title="Powiadomienia"
-                    summary="Sprawdź czy dostaniesz jakieś"
+                    :disabled="!hasNotifications"
+                    :summary="hasNotifications ? 'Sprawdź czy dostaniesz jakieś' : 'Twoja przeglądarka nie wspiera powiadomień, użyj innej'"
                     to="/ustawienia/powiadomienia"/>
 
         <Preference icon="code"
@@ -103,6 +104,7 @@
             myNumber() { return `${this.$store.state.userNumber || ''}`;},
             userTheme() { return this.$store.state.userTheme;},
             notificationsValue() { return this.$store.getters.hasNotificationPermission ? 'włączone' : 'wyłączone';},
+            hasNotifications() { return 'Notification' in window;},
         },
     };
 </script>
