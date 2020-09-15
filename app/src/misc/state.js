@@ -30,16 +30,24 @@ const store = new VueX.Store({
         systemDarkTheme: darkThemeQuery.matches,
         userTheme: localStorage.getItem('theme') || null,
         notificationPermission: 'Notification' in window ? Notification.permission : 'not-supported',
+        everGivenNotificationPermission: !!localStorage.getItem('everNotification'),
         installEvent: null,
+        installEventUsed: !!localStorage.getItem('installEventUsed'),
     },
     mutations: {
+        setInstallEventUsed(state, used) {
+            state.installEventUsed = !!used;
+            setLocalStorage('installEventUsed', used ? 'yes' : null);
+        },
         setInstallEvent(state, event) {
             if (event)
                 event.preventDefault();
+            if (state.installEventUsed) return;
             state.installEvent = event;
         },
         updateNotificationPermission(state) {
-            state.notificationPermission = 'not-supported'
+            state.notificationPermission = 'not-supported';
+            if (Notification.permission) setLocalStorage('everNotification', 'true');
             if (state.notificationPermission === Notification.permission) return;
             state.notificationPermission = Notification.permission;
             sendTokenToServer();
@@ -89,6 +97,10 @@ const store = new VueX.Store({
         },
     },
     actions: {
+        useInstallEvent({commit}) {
+            commit('setInstallEventUsed', true);
+            commit('setInstallEvent', null);
+        },
         toggleUserTheme({commit, state}) {
             if (!state.userTheme)
                 commit('setUserDarkTheme', 'light');

@@ -1,6 +1,6 @@
 <template>
     <div class="home">
-        <AllowNotificationsBar v-if="showNotificationBar"
+        <AllowNotificationsBar v-if="showNotificationBar && !everGivenNotificationPermission"
                                to="/ustawienia/powiadomienia"
                                icon="notifications"
                                text="Włącz powiadomienia o zastępstwach"/>
@@ -39,6 +39,7 @@
         computed: {
             showNotificationBar() { return this.$store.state.notificationPermission === 'default';},
             installEvent() { return this.$store.state.installEvent;},
+            everGivenNotificationPermission() { return this.$store.state.everGivenNotificationPermission; }
         },
         methods: {
             onNewsUpdated(snap) {
@@ -46,7 +47,7 @@
             },
             installClicked() {
                 this.installEvent.prompt();
-                this.$store.commit('setInstallEvent', null)
+                this.$store.dispatch('useInstallEvent')
             }
         },
         created() {
