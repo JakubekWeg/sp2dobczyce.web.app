@@ -5,10 +5,12 @@ const fullLineRegex = /^([0-9])\)\s*([a-z0-9]+)\s*-\s*([_\p{L} ]+)\s*-\s*([\p{L}
 const withoutClassRegex = /^([0-9])\)\s*([_\p{L} ]+)\s*-\s*([\p{L}\- ]+).*/iu
 const ignoreLineRegex = /wycieczka|rekolekcje|wyjazd|pielgrzymka/iu
 const affectsExtractRegex = /(\d\w)|ks\.(\p{L}+).*|([\p{L}-]+).*/iu
+const extractDateFromHeaderRegex = /(\d?\d)\.(\d?\d)\.(\d{4})r\./
 
 const tryToParseDate = (line: string) => {
-	const l = (line.includes('r.')) ? line.substring(0, line.indexOf('r.')).trim() : line
-	const millis = Date.parse(l)
+	const match = extractDateFromHeaderRegex.exec(line)
+	if (!match) return
+	const millis = Date.parse(`${match[3]}-${match[2]}-${match[1]}`)
 	return !!millis ? new Date(millis) : null
 }
 
@@ -159,7 +161,7 @@ export const downloadAndParseSubstitutes = async (lastContent: string | undefine
 
 	return {
 		htmlContent,
-		sections: [...combined, ...withoutDate]
+		sections: [...combined, ...withoutDate],
 	}
 }
 
@@ -168,6 +170,7 @@ export interface AddedLineEntry {
 	affects: string[],
 	date: string
 }
+
 export const compareSnapshots = (current: SubstituteSection[], last: SubstituteSection[]): AddedLineEntry[] => {
 	const addedLines: AddedLineEntry[] = []
 

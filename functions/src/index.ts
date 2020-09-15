@@ -16,6 +16,8 @@ export const periodicSync = functions
 export const triggerPeriodicSync = functions
 	.runWith({memory: '128MB'})
 	.https.onCall(async () => {
+		if (!process.env.FUNCTIONS_EMULATOR)
+			throw new functions.https.HttpsError('unimplemented', 'requires functions emulator')
 		await (await import('./periodic-job')).execute({ignoreCurrentState: true})
 	})
 

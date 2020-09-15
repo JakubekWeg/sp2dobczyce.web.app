@@ -35,7 +35,6 @@ config.settings = {
 config.defaultConfig = {
     maxLuckyNumber: 30
 };
-config.fetchAndActivate().then(e => e && console.info('Activated new config'));
 
 
 if (location.hostname === 'localhost') {
@@ -47,9 +46,11 @@ if (location.hostname === 'localhost') {
     functions.useFunctionsEmulator('http://localhost:5001');
 
     performance.dataCollectionEnabled = false;
+    performance.instrumentationEnabled = false
 
     analytics.setAnalyticsCollectionEnabled(false);
-}
+} else
+    config.fetchAndActivate().then(e => e && console.info('Activated new config'));
 
 firestore.enablePersistence().catch(e => console.error(e.message));
 
