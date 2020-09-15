@@ -283,7 +283,7 @@ export const downloadTimetable = async (info: TimetableInfo): Promise<Timetable>
 			if (lesson) {
 				if (lesson.data) {
 					const data: GroupLessonData | GroupLessonData[] = lesson.data
-					const objects: GroupLessonData[] = (data as GroupLessonData[])[0] ? data as GroupLessonData[] : [data as GroupLessonData]
+					const objects: GroupLessonData[] = (Array.isArray(data)) ? data as GroupLessonData[] : [data as GroupLessonData]
 					for (const obj of objects) {
 						if (obj) {
 							if (obj.teacher === '&nbsp;') obj.teacher = ''
@@ -291,7 +291,9 @@ export const downloadTimetable = async (info: TimetableInfo): Promise<Timetable>
 							if (obj.subject === '&nbsp;') obj.subject = ''
 						}
 					}
-					if (!((data as GroupLessonData)?.subject)) {
+
+
+					if (!(Array.isArray(data))) {
 						const tmp = data as GroupLessonData
 						if (!tmp.subject && !tmp.classroom && !tmp.teacher)
 							delete lesson.data
