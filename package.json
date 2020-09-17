@@ -4,5 +4,8 @@
     "deploy": "cd app && npm run build && cd .. && rm public -r && mv app/dist public && firebase deploy",
     "deploy:hosting": "cd app && npm run build && cd .. && rm public -r && mv app/dist public && firebase deploy --only hosting",
     "deploy:functions": "firebase deploy --only functions"
+  },
+  "dependencies": {
+    "concurrently": "^5.3.0"
   }
 }

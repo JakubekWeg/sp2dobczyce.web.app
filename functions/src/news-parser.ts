@@ -32,7 +32,7 @@ export interface SubstituteSection {
 	header: string | null
 	textRaw: string
 	// entries: Substitute[]
-	lines: ComputedLine[]
+	lines: ComputedLine[] | null
 }
 
 const combineSections = (one: SubstituteSection, two: SubstituteSection): SubstituteSection => {
@@ -48,7 +48,7 @@ const combineSections = (one: SubstituteSection, two: SubstituteSection): Substi
 		textRaw: textCombined,
 		date: one.date,
 		// entries,
-		lines: [...one.lines, ...two.lines],
+		lines: [...(one.lines || []), ...(two.lines || [])],
 	}
 }
 
@@ -171,32 +171,47 @@ export interface AddedLineEntry {
 	date: string
 }
 
-export const compareSnapshots = (current: SubstituteSection[], last: SubstituteSection[]): AddedLineEntry[] => {
+export const compareSnapshots = (current: SubstituteSection[], last: SubstituteSection[] | undefined): AddedLineEntry[] => {
 	const addedLines: AddedLineEntry[] = []
 
 	for (const section of current) {
 		const date = section.date
 		if (!date) continue
 
-		const lastSection = last.find(e => e.date === section.date)
+		const lastSection = last?.find(e => e.date === section.date)
 		if (lastSection) {
 			const equalSections = lastSection.textRaw === section.textRaw
 			if (!equalSections) {
-				for (let i = section.lines.length - 1; i >= 0; i--) {
-					const {content, affects} = section.lines[i]
-					if (!affects) continue
-					const lastLine = lastSection.lines.find(e => e.content === content)
+				const thisSectionLines = section.lines
+				if (thisSectionLines) {
+					for (let i = thisSectionLines.length - 1; i >= 0; i--) {
+						const {content, affects} = thisSectionLines[i]
+						if (!affects) continue
+						const lastLine = lastSection.lines?.find(e => e.content === content)
 
-					if (!lastLine) {
-						addedLines.push({
-							affects: affects,
-							content: content,
-							date,
-						})
+						if (!lastLine) {
+							addedLines.push({
+								affects: affects,
+								content: content,
+								date,
+							})
+						}
 					}
 				}
 			}
-
+		} else {
+			const thisSectionLines = section.lines
+			if (thisSectionLines) {
+				for (const line of thisSectionLines) {
+					const affects = line.affects
+					if (affects)
+						addedLines.push({
+							date,
+							affects,
+							content: line.content,
+						})
+				}
+			}
 		}
 	}
 
