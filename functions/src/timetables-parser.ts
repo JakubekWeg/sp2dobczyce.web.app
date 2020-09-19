@@ -1,5 +1,7 @@
 import fetch from 'node-fetch'
 import { HTMLElement, parse as parseHTML } from 'node-html-parser'
+import Node from 'node-html-parser/dist/nodes/node'
+import NodeType from 'node-html-parser/dist/nodes/type'
 
 const BASE_LINK = 'http://sp2dobczyce.pl/planlekcji/'
 
@@ -128,6 +130,10 @@ export const downloadTimetable = async (info: TimetableInfo): Promise<Timetable>
 			const nodes = cell.childNodes
 			// .filter(e => e.nodeType === NodeType.ELEMENT_NODE) as HTMLElement[]
 
+			const isTag = (element: Node, name: string): boolean => {
+				return element.nodeType === NodeType.ELEMENT_NODE && (element as HTMLElement).tagName === name
+			}
+
 			if (!cell.rawText.trim())
 				lesson = {data: undefined, day, number}
 			else if (!!cell.querySelector('br')
@@ -157,58 +163,52 @@ export const downloadTimetable = async (info: TimetableInfo): Promise<Timetable>
 						}
 						break
 					case 7:
-						const first = nodes[0]
-						const last = nodes[6]
-
-						if ((last as HTMLElement)?.tagName === 'span') {
+						if (isTag(nodes[0], 'span')
+							&& isTag(nodes[1], 'br')
+							&& isTag(nodes[2], 'span')
+							&& nodes[3].nodeType === NodeType.TEXT_NODE
+							&& isTag(nodes[4], 'span')
+							&& nodes[5].nodeType === NodeType.TEXT_NODE
+							&& isTag(nodes[6], 'a')) {
 							lesson = {
 								number, day,
 								data: [
 									{
-										subject: (nodes[0].rawText.trim() || '') + (nodes[1].rawText.trim() || ''),
-										teacher: '',
-										classroom: nodes[3].rawText.trim(),
+										subject: nodes[0].childNodes[0].rawText,
+										teacher: nodes[0].childNodes[2].rawText,
+										classroom: nodes[0].childNodes[4].rawText,
 									},
 									{
-										subject: (last as HTMLElement)?.querySelector('.p')?.rawText?.trim() || '',
-										teacher: (last as HTMLElement)?.querySelector('.n')?.rawText?.trim() || '',
-										classroom: (last as HTMLElement)?.querySelector('.s')?.rawText?.trim() || '',
+										subject: nodes[2].rawText + nodes[3].rawText + nodes[4].rawText,
+										teacher: '',
+										classroom: nodes[6].rawText,
 									},
 								],
 							}
-
-						} else if ((first as HTMLElement)?.tagName === 'span') {
+						} else if (isTag(nodes[0], 'span')
+							&& nodes[1].nodeType === NodeType.TEXT_NODE
+							&& isTag(nodes[2], 'span')
+							&& nodes[3].nodeType === NodeType.TEXT_NODE
+							&& isTag(nodes[4], 'a')
+							&& isTag(nodes[5], 'br')
+							&& isTag(nodes[6], 'span')) {
 							lesson = {
 								number, day,
 								data: [
 									{
-										subject: (last as HTMLElement)?.querySelector('.p')?.rawText?.trim() || '',
-										teacher: (last as HTMLElement)?.querySelector('.n')?.rawText?.trim() || '',
-										classroom: (last as HTMLElement)?.querySelector('.s')?.rawText?.trim() || '',
-									},
-									{
-										subject: (nodes[3].rawText.trim() || '') + (nodes[4].rawText.trim() || ''),
+										subject: nodes[0].rawText + nodes[1].rawText + nodes[2].rawText,
 										teacher: '',
-										classroom: nodes[6].rawText.trim(),
+										classroom: '',
 									},
-								],
-							}
-						} else if ((first as HTMLElement)?.tagName === 'a') {
-							lesson = {
-								number, day,
-								data: [
 									{
-										teacher: nodes[0].rawText + nodes[1].rawText + nodes[2].rawText + nodes[3].rawText,
-										subject: (last as HTMLElement)?.querySelector('.p')?.rawText?.trim() || '',
-										classroom: (last as HTMLElement)?.querySelector('.s')?.rawText?.trim() || '',
+										subject: nodes[6].childNodes[0].rawText,
+										teacher: nodes[6].childNodes[2].rawText,
+										classroom: nodes[6].childNodes[4].rawText,
 									},
 								],
 							}
 						} else {
-							// // @ts-ignore
-							// console.log({day, number, tags: nodes.map(e => e?.tagName)})
-							// console.log(nodes)
-							throw new Error('wut? xd')
+							throw new Error('cells: 7, invalid schema')
 						}
 						break
 					case 3:
@@ -260,7 +260,7 @@ export const downloadTimetable = async (info: TimetableInfo): Promise<Timetable>
 					default:
 						throw new Error('Invalid node length = ' + nodes.length + ', name=' + info.name)
 				}
-			} else if (cell.childNodes.length === 1) {
+			} else if (nodes.length === 1) {
 				lesson = {
 					number, day,
 					data: {
