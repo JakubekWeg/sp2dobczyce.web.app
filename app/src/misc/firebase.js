@@ -10,16 +10,7 @@ import {delay} from './user';
 import store from './state';
 import router from './router';
 
-firebase.initializeApp({
-    apiKey: 'AIzaSyDNQTCjaMCxIUmm1RvETZeBKupaM615ZyA',
-    authDomain: 'sp2dobczyce.firebaseapp.com',
-    databaseURL: 'https://sp2dobczyce.firebaseio.com',
-    projectId: 'sp2dobczyce',
-    storageBucket: 'sp2dobczyce.appspot.com',
-    messagingSenderId: '446559162381',
-    appId: '1:446559162381:web:a4d638d4e5872a10c98544',
-    measurementId: 'G-4DNYDP5MRH'
-});
+firebase.initializeApp(JSON.parse(atob("eyJhcGlLZXkiOiJBSXphU3lETlFUQ2phTUN4SVVtbTFSdkVUWmVCS3VwYU02MTVaeUEiLCJhdXRoRG9tYWluIjoic3AyZG9iY3p5Y2UuZmlyZWJhc2VhcHAuY29tIiwiZGF0YWJhc2VVUkwiOiJodHRwczovL3NwMmRvYmN6eWNlLmZpcmViYXNlaW8uY29tIiwicHJvamVjdElkIjoic3AyZG9iY3p5Y2UiLCJtZXNzYWdpbmdTZW5kZXJJZCI6IjQ0NjU1OTE2MjM4MSIsImFwcElkIjoiMTo0NDY1NTkxNjIzODE6d2ViOmE0ZDYzOGQ0ZTU4NzJhMTBjOTg1NDQiLCJtZWFzdXJlbWVudElkIjoiRy00RE5ZRFA1TVJIIn0=")));
 
 export const firestore = firebase.firestore();
 export const functions = firebase.functions();
