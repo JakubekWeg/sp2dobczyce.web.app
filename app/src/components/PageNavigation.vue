@@ -8,6 +8,10 @@
             <Icon name="today"/>
             <span>Plan lekcji</span>
         </router-link>
+        <router-link to="/kalkulator" :class="{active: this.activeNavTab === 'calc'}">
+            <Icon name="functions"/>
+            <span>Kalkulator</span>
+        </router-link>
         <router-link to="/ustawienia" :class="{active: this.activeNavTab === 'settings'}">
             <Icon name="settings"/>
             <span>Preferencje</span>
@@ -27,7 +31,7 @@
         },
         created() {
             this.onRouteUpdate(this.$route);
-            this.$router.afterEach(this.onRouteUpdate)
+            this.$router.afterEach(this.onRouteUpdate);
         },
         data() {
             return {
@@ -67,7 +71,7 @@
         padding: 0;
     }
 
-    span {
+    nav span {
         display: block;
     }
 </style>

@@ -1,5 +1,5 @@
 <template>
-    <span class="icon material-icon">{{name}}</span>
+    <span class="icon material-icon" @click="$emit('click')">{{name}}</span>
 </template>
 
 <script>

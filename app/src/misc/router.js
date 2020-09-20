@@ -6,6 +6,7 @@ import SettingsView from '../views/SettingsView';
 import TimetablesListView from '../views/TimetablesListView';
 import NotFoundLayout from '../views/NotFoundLayout';
 import NotificationsView from '../views/NotificationsView';
+import AverageCalculatorView from '../views/AverageCalculatorView';
 
 Vue.use(VueRouter);
 
@@ -39,6 +40,16 @@ const routes = [
         path: '/ustawienia/powiadomienia',
         component: NotificationsView,
         meta: {navTab: 'settings', title: 'Powiadomienia'},
+    },
+    {
+        path: '/ustawienia/powiadomienia',
+        component: NotificationsView,
+        meta: {navTab: 'settings', title: 'Powiadomienia'},
+    },
+    {
+        path: '/kalkulator',
+        component: AverageCalculatorView,
+        meta: {navTab: 'calc', title: 'Kalkulator średnich'},
     },
     {
         path: '*',
