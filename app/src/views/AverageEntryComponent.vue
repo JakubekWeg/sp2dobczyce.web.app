@@ -39,7 +39,7 @@
 
 <style scoped>
     .entry {
-        padding: 4px 2px;
+        padding: 6px 4px;
         text-align: left;
         display: flex;
         align-items: center;
@@ -52,14 +52,13 @@
     }
 
     .name {
-        text-transform: capitalize;
         flex: 1;
-        padding-left: 8px;
+        padding-left: 4px;
     }
 
     .sign {
         user-select: none;
-        padding: 4px;
+        padding: 6px;
         transition: background-color .3s;
         cursor: pointer;
         border-radius: 30%;

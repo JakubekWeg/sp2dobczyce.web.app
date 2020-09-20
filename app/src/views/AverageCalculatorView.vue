@@ -20,6 +20,7 @@
         <div class="space"></div>
         <div class="space"></div>
         <div class="space"></div>
+        <div class="space"></div>
     </div>
 </template>
 
@@ -67,7 +68,7 @@
             if (!this.entries.length)
                 [
                     'matematyka', 'j.polski', 'j.angielski', 'j.niemiecki',
-                    'geografia', 'historia', 'biologia', 'chemia',
+                    'geografia', 'biologia', 'chemia', 'fizyka',
                     'wf', 'historia', 'wos', 'religia', 'technika', 'informatyka'
                 ]
                     .forEach(this.addSubject);
@@ -90,7 +91,6 @@
         margin: 0 auto;
         background-color: var(--lighter-back-background-color);
         border-radius: 8px;
-        padding: 8px 4px;
     }
 
     .avg {

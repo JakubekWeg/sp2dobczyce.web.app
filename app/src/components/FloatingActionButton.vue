@@ -27,8 +27,8 @@
         background: var(--primary-color);
         color: var(--on-primary-color);
         border: none;
-        width: 40px;
-        height: 40px;
+        width: 52px;
+        height: 52px;
         display: grid;
         place-content: center;
         overflow: hidden;
@@ -36,8 +36,8 @@
         transition: background-color .3s;
         cursor: pointer;
         position: fixed;
-        right: 8px;
-        bottom: calc(48px + 8px);
+        right: 12px;
+        bottom: calc(48px + 12px);
         box-shadow: 0 0 4px 0 rgba(0, 0, 0, .5);
     }
 
@@ -46,6 +46,6 @@
     }
 
     .fab .icon {
-        font-size: 32px;
+        font-size: 48px;
     }
 </style>
