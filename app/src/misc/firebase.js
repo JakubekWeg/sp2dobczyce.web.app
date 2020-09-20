@@ -14,9 +14,19 @@ firebase.initializeApp(JSON.parse(atob("eyJhcGlLZXkiOiJBSXphU3lETlFUQ2phTUN4SVVt
 
 export const firestore = firebase.firestore();
 export const functions = firebase.functions();
+export const config = firebase.remoteConfig();
 export const performance = firebase.performance();
 export const messaging = firebase.messaging();
 export const analytics = firebase.analytics();
+
+config.settings = {
+    fetchTimeoutMillis: 60000,
+    minimumFetchIntervalMillis: 24 * 60 * 60 * 1000,
+};
+config.defaultConfig = {
+    maxLuckyNumber: 30
+};
+
 
 if (location.hostname === 'localhost') {
     firestore.settings({
@@ -30,7 +40,8 @@ if (location.hostname === 'localhost') {
     performance.instrumentationEnabled = false
 
     analytics.setAnalyticsCollectionEnabled(false);
-}
+} else
+    config.fetchAndActivate().then(e => e && console.info('Activated new config'));
 
 firestore.enablePersistence().catch(e => console.error(e.message));
 

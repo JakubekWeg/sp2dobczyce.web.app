@@ -14,14 +14,14 @@
     };
 </script>
 
-<!--suppress CssNoGenericFontName -->
+<!--suppress CssNoGenericFontName, CssUnknownTarget -->
 <style>
     /* fallback */
     @font-face {
         font-family: 'Material Icons';
         font-style: normal;
         font-weight: 400;
-        src: url(https://fonts.gstatic.com/s/materialicons/v55/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2) format('woff2');
+        src: url(/fonts/material-icons.woff2) format('woff2');
     }
 
     .material-icon {

@@ -29,7 +29,7 @@
         "headers": [
           {
             "key": "cache-control",
-            "value": "max-age=604800;s-maxage=36000"
+            "value": "max-age=604800;s-maxage=36000;public"
           }
         ]
       },
@@ -38,7 +38,7 @@
         "headers": [
           {
             "key": "cache-control",
-            "value": "max-age=172800;s-maxage=36000"
+            "value": "max-age=172800;s-maxage=36000;public"
           }
         ]
       },
@@ -47,7 +47,16 @@
         "headers": [
           {
             "key": "cache-control",
-            "value": "max-age=172800;s-maxage=36000"
+            "value": "max-age=172800;s-maxage=36000;public"
+          }
+        ]
+      },
+      {
+        "source": "/fonts/**",
+        "headers": [
+          {
+            "key": "cache-control",
+            "value": "max-age=22896000;s-maxage=22896000;public"
           }
         ]
       },
@@ -56,7 +65,7 @@
         "headers": [
           {
             "key": "cache-control",
-            "value": "max-age=36000;s-maxage=600"
+            "value": "max-age=36000;s-maxage=600;public"
           }
         ]
       }
