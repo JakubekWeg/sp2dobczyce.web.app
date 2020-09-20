@@ -5,7 +5,6 @@
 </template>
 
 <script>
-    import {config} from '../misc/firebase';
 
     export default {
         name: 'ChooseNumberDialog',
@@ -24,7 +23,7 @@
             selected() {return this.$store.state.userNumber;}
         },
         created() {
-            const max = config.getNumber('maxLuckyNumber') || 30;
+            const max = 30;
             const numbers = [];
             for (let i = 1; i <= max; i++)
                 numbers.push(i);
