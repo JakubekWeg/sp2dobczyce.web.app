@@ -26,6 +26,7 @@
 <style>
     :root {
         --primary-color: #4150b6;
+        --primary-darker-color: #313f9e;
         --on-primary-color: #eaebf5;
         --on-primary-secondary-color: #bec3e2;
         --back-background-color: #d6d6d6;

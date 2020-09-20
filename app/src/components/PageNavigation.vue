@@ -71,7 +71,7 @@
         padding: 0;
     }
 
-    span {
+    nav span {
         display: block;
     }
 </style>
