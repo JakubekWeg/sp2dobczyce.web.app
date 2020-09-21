@@ -60,7 +60,7 @@ export const execute = async (options: ExecuteOptions = {}) => {
 }
 
 const updateNews = async (args: ExecuteArguments) => {
-	const {downloadAndParseSubstitutes, compareSnapshots} = await import('./news-parser')
+	const {downloadAndParseSubstitutes, compareSnapshots} = await import('../news-parser')
 
 
 	const current = await downloadAndParseSubstitutes(args.lastState.lastNewsHtmlContent)
@@ -107,7 +107,7 @@ const updateNumbers = async (args: ExecuteArguments) => {
 	const shouldDownloadNumbers = args.lastState.nextNumbersUpdate?.getTime() || 0 < Date.now()
 	if (!shouldDownloadNumbers) return
 
-	const {downloadLuckNumbers} = await import('./lucky-numbers-parser')
+	const {downloadLuckNumbers} = await import('../lucky-numbers-parser')
 
 	const result = await downloadLuckNumbers()
 
@@ -150,7 +150,7 @@ const updateTimetables = async (args: ExecuteArguments) => {
 	const shouldDownloadTimetables = args.lastState.nextTimetablesUpdate?.getTime() || 0 < Date.now()
 	if (!shouldDownloadTimetables) return
 
-	const {downloadTimetablesSummary, downloadTimetable} = await import('./timetables-parser')
+	const {downloadTimetablesSummary, downloadTimetable} = await import('../timetables-parser')
 
 	const summary = await downloadTimetablesSummary(args.lastState.timetablesListLastModifiedHeader)
 	if (summary) {
@@ -167,3 +167,5 @@ const updateTimetables = async (args: ExecuteArguments) => {
 	}
 	args.newState.nextTimetablesUpdate = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
 }
+
+export default execute

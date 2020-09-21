@@ -1,4 +1,4 @@
-import * as admin from 'firebase-admin'
+import admin from './admin'
 
 const WEB_PAGE_ROOT = 'https://sp2dobczyce.web.app/'
 const defaultNotification = {
