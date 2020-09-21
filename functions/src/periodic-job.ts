@@ -1,10 +1,5 @@
 import * as admin from 'firebase-admin'
 
-interface SendFcmArgument {
-	tokens: string[]
-	message: admin.messaging.NotificationMessagePayload
-}
-
 interface ServerState {
 	nextNumbersUpdate?: Date
 	nextTimetablesUpdate?: Date
@@ -17,7 +12,7 @@ interface ExecuteArguments {
 	newState: ServerState
 	firestore: admin.firestore.Firestore
 	transaction: admin.firestore.Transaction
-	fcmsToSend: SendFcmArgument[]
+	affectedTriggers: Set<string>
 }
 
 export interface ExecuteOptions {
@@ -28,7 +23,6 @@ export const execute = async (options: ExecuteOptions = {}) => {
 	const firestore = admin.firestore()
 	const serverStateRef = firestore.collection('values').doc('server-state')
 
-	const fcmsToSend: SendFcmArgument[] = []
 	await firestore.runTransaction(async transaction => {
 		let state: ServerState = {}
 		if (!options.ignoreCurrentState) {
@@ -42,23 +36,27 @@ export const execute = async (options: ExecuteOptions = {}) => {
 
 		const newState: ServerState = {}
 
-		fcmsToSend.length = 0
 		const args: ExecuteArguments = {
 			lastState: state,
 			newState, transaction, firestore,
-			fcmsToSend,
+			affectedTriggers: new Set<string>(),
 		}
 		const promises = [updateNews, updateNumbers, updateTimetables].map(e => e(args))
 
 		await Promise.all(promises)
 
 		transaction.set(serverStateRef, args.newState, {merge: true})
-	})
 
-	if (fcmsToSend.length) {
-		const {sendFcmNotifications} = await import('./fcm')
-		await Promise.all(fcmsToSend.map(e => sendFcmNotifications(e.tokens, e.message)))
-	}
+		if (args.affectedTriggers.size) {
+			const triggers = Array.from(args.affectedTriggers.values())
+			transaction.create(firestore.collection('fcm-requests').doc(), {
+				triggers,
+				time: admin.firestore.FieldValue.serverTimestamp(),
+				title: 'Nowe zastępstwa',
+				body: 'Pojawiły się nowe zastępstwa, jest też coś dla Ciebie',
+			})
+		}
+	})
 }
 
 const updateNews = async (args: ExecuteArguments) => {
@@ -80,28 +78,28 @@ const updateNews = async (args: ExecuteArguments) => {
 
 		const addedLineEntries = compareSnapshots(current.sections, lastSections)
 
-		const affectedTriggersSet = new Set<string>()
-		addedLineEntries.forEach(e => e.affects.forEach(e2 => affectedTriggersSet.add(e2)))
+		addedLineEntries.forEach(e => e.affects.forEach(e2 => args.affectedTriggers.add(e2)))
 
-		const affectedTriggersList = Array.from(affectedTriggersSet.values())
-		const tokens = new Set<string>()
+		//
+		// const affectedTriggersList = Array.from(affectedTriggersSet.values())
+		// const tokens = new Set<string>()
+		//
+		// while (affectedTriggersList.length > 0) {
+		// 	const ten = affectedTriggersList.splice(0, 10);
+		// 	(await args.firestore
+		// 		.collection('tokens')
+		// 		.where('triggers', 'array-contains-any', ten)
+		// 		.get())
+		// 		.docs.forEach(e => tokens.add(e.id))
+		// }
 
-		while (affectedTriggersList.length > 0) {
-			const ten = affectedTriggersList.splice(0, 10);
-			(await args.firestore
-				.collection('tokens')
-				.where('triggers', 'array-contains-any', ten)
-				.get())
-				.docs.forEach(e => tokens.add(e.id))
-		}
-
-		args.fcmsToSend.push({
-			tokens: Array.from(tokens.values()),
-			message: {
-				title: 'Nowe zastępstwa',
-				body: 'Pojawiły się nowe zastępstwa, jest też coś dla Ciebie',
-			},
-		})
+		// args.fcmsToSend.push({
+		// 	tokens: Array.from(tokens.values()),
+		// 	message: {
+		// 		title: 'Nowe zastępstwa',
+		// 		body: 'Pojawiły się nowe zastępstwa, jest też coś dla Ciebie',
+		// 	},
+		// })
 	}
 }
 
