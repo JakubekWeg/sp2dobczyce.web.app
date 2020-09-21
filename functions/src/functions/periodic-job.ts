@@ -1,4 +1,4 @@
-import * as admin from 'firebase-admin'
+import admin from '../admin'
 
 interface ServerState {
 	nextNumbersUpdate?: Date
@@ -79,27 +79,6 @@ const updateNews = async (args: ExecuteArguments) => {
 		const addedLineEntries = compareSnapshots(current.sections, lastSections)
 
 		addedLineEntries.forEach(e => e.affects.forEach(e2 => args.affectedTriggers.add(e2)))
-
-		//
-		// const affectedTriggersList = Array.from(affectedTriggersSet.values())
-		// const tokens = new Set<string>()
-		//
-		// while (affectedTriggersList.length > 0) {
-		// 	const ten = affectedTriggersList.splice(0, 10);
-		// 	(await args.firestore
-		// 		.collection('tokens')
-		// 		.where('triggers', 'array-contains-any', ten)
-		// 		.get())
-		// 		.docs.forEach(e => tokens.add(e.id))
-		// }
-
-		// args.fcmsToSend.push({
-		// 	tokens: Array.from(tokens.values()),
-		// 	message: {
-		// 		title: 'Nowe zastępstwa',
-		// 		body: 'Pojawiły się nowe zastępstwa, jest też coś dla Ciebie',
-		// 	},
-		// })
 	}
 }
 

@@ -14,14 +14,6 @@ const tryToParseDate = (line: string) => {
 	return !!millis ? new Date(millis) : null
 }
 
-// interface Substitute {
-// 	lineNumber: number
-// 	lessonNumber: number
-// 	subjectName: string
-// 	teacherName: string
-// 	className?: string
-// }
-
 interface ComputedLine {
 	content: string
 	affects?: string[]
@@ -31,23 +23,16 @@ export interface SubstituteSection {
 	date: string | null
 	header: string | null
 	textRaw: string
-	// entries: Substitute[]
 	lines: ComputedLine[] | null
 }
 
 const combineSections = (one: SubstituteSection, two: SubstituteSection): SubstituteSection => {
 	if (one.date !== two.date) throw new Error('To add two sections they must have the same date')
-	// const linesCount = one.text.split('\n').length + 1
 	const textCombined = one.textRaw + '\n' + two.textRaw
-	// const entries = [...one.entries, ...two.entries.map(e => ({
-	// 	...e,
-	// 	lineNumber: e.lineNumber + linesCount,
-	// }))]
 	return {
 		header: one.header || two.header || null,
 		textRaw: textCombined,
 		date: one.date,
-		// entries,
 		lines: [...(one.lines || []), ...(two.lines || [])],
 	}
 }
@@ -90,23 +75,10 @@ export const downloadAndParseSubstitutes = async (lastContent: string | undefine
 					}
 					let match = fullLineRegex.exec(line)
 					if (match) {
-						// substitutes.push({
-						// 	lineNumber: i,
-						// 	lessonNumber: +match[1].trim(),
-						// 	className: match[2].trim(),
-						// 	subjectName: match[3].trim(),
-						// 	teacherName: match[4].trim(),
-						// })
-						computed.affects = [match[2], match[4]]
+						computed.affects = [match[2], match[match[4] === 'zastępstwo' ? 3 : 4]]
 					} else {
 						match = withoutClassRegex.exec(line)
 						if (match) {
-							// substitutes.push({
-							// 	lineNumber: i,
-							// 	lessonNumber: +match[1].trim(),
-							// 	subjectName: match[2].trim(),
-							// 	teacherName: match[3].trim(),
-							// })
 							computed.affects = [match[3]]
 						}
 					}
@@ -128,7 +100,6 @@ export const downloadAndParseSubstitutes = async (lastContent: string | undefine
 
 			return <SubstituteSection>{
 				header: header,
-				// entries: substitutes,
 				date: date?.toISOString()?.substr(0, 10) || null,
 				textRaw: section,
 				lines: computedLines,
