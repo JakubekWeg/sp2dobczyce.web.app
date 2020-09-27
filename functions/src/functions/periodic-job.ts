@@ -1,10 +1,13 @@
 import admin from '../admin'
 
+const MAX_ADDRESS_NOT_FOUND_ERRORS_IN_ROW = 2
+
 interface ServerState {
 	nextNumbersUpdate?: Date
 	nextTimetablesUpdate?: Date
 	lastNewsHtmlContent?: string
 	timetablesListLastModifiedHeader?: string | null
+	addressNotFoundErrorCounter?: number
 }
 
 interface ExecuteArguments {
@@ -23,40 +26,66 @@ export const execute = async (options: ExecuteOptions = {}) => {
 	const firestore = admin.firestore()
 	const serverStateRef = firestore.collection('values').doc('server-state')
 
-	await firestore.runTransaction(async transaction => {
-		let state: ServerState = {}
-		if (!options.ignoreCurrentState) {
-			const stateValue: any = (await transaction.get(serverStateRef)).data()
-			state = stateValue ? {
-				...stateValue,
-				nextNumbersUpdate: stateValue.nextNumbersUpdate?.toDate() ?? new Date(),
-				nextTimetablesUpdate: stateValue.nextTimetablesUpdate?.toDate() ?? new Date(),
-			} : {}
-		}
+	try {
+		await firestore.runTransaction(async transaction => {
+			let state: ServerState = {}
+			if (!options.ignoreCurrentState) {
+				const stateValue: any = (await transaction.get(serverStateRef)).data()
+				state = stateValue ? {
+					...stateValue,
+					nextNumbersUpdate: stateValue.nextNumbersUpdate?.toDate() ?? new Date(),
+					nextTimetablesUpdate: stateValue.nextTimetablesUpdate?.toDate() ?? new Date(),
+				} : {}
+			}
 
-		const newState: ServerState = {}
+			const newState: ServerState = {}
 
-		const args: ExecuteArguments = {
-			lastState: state,
-			newState, transaction, firestore,
-			affectedTriggers: new Set<string>(),
-		}
-		const promises = [updateNews, updateNumbers, updateTimetables].map(e => e(args))
+			const args: ExecuteArguments = {
+				lastState: state,
+				newState, transaction, firestore,
+				affectedTriggers: new Set<string>(),
+			}
+			const promises = [updateNews, updateNumbers, updateTimetables].map(e => e(args))
 
-		await Promise.all(promises)
+			await Promise.all(promises)
 
-		transaction.set(serverStateRef, args.newState, {merge: true})
+			args.newState.addressNotFoundErrorCounter = 0
+			transaction.set(serverStateRef, args.newState, {merge: true})
 
-		if (args.affectedTriggers.size) {
-			const triggers = Array.from(args.affectedTriggers.values())
-			transaction.create(firestore.collection('fcm-requests').doc(), {
-				triggers,
-				time: admin.firestore.FieldValue.serverTimestamp(),
-				title: 'Nowe zastępstwa',
-				body: 'Pojawiły się nowe zastępstwa, jest też coś dla Ciebie',
-			})
-		}
+			if (args.affectedTriggers.size) {
+				const triggers = Array.from(args.affectedTriggers.values())
+				transaction.create(firestore.collection('fcm-requests').doc(), {
+					triggers,
+					time: admin.firestore.FieldValue.serverTimestamp(),
+					title: 'Nowe zastępstwa',
+					body: 'Pojawiły się nowe zastępstwa, jest też coś dla Ciebie',
+				})
+			}
+		})
+	} catch (e) {
+		if (e.code !== 'ENOTFOUND')
+			throw e
+		await handleAddressNotFound(serverStateRef, e)
+	}
+}
+
+const handleAddressNotFound = async (serverStateRef: FirebaseFirestore.DocumentReference, e: Error) => {
+	const currentState = (await serverStateRef.get()).data() as ServerState
+	if (!currentState) {
+		await serverStateRef.create(<ServerState>{
+			addressNotFoundErrorCounter: 1,
+		})
+		return
+	}
+
+	const thisTime = (currentState.addressNotFoundErrorCounter || 0) + 1
+	await serverStateRef.update(<ServerState>{
+		addressNotFoundErrorCounter: thisTime
 	})
+	if (thisTime <= MAX_ADDRESS_NOT_FOUND_ERRORS_IN_ROW) {
+		console.warn('Got ENOTFOUND, but ignoring. This is ' + thisTime + ' time in a row')
+	} else
+		throw e
 }
 
 const updateNews = async (args: ExecuteArguments) => {
