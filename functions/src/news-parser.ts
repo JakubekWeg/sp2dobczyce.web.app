@@ -3,6 +3,7 @@ import { parse as parseHTML } from 'node-html-parser'
 
 const fullLineRegex = /^([0-9])\)\s*([a-z0-9]+)\s*-\s*([_\p{L} ]+)\s*-\s*([\p{L}\- .]+).*/iu
 const withoutClassRegex = /^([0-9])\)\s*([_\p{L} ]+)\s*-\s*([\p{L}\- ]+).*/iu
+const lessonsCancelledRegex = /^[0-9]\)\s+([a-z0-9]+)\s.*zajęcia odwołane.*$/
 const ignoreLineRegex = /wycieczka|rekolekcje|wyjazd|pielgrzymka/iu
 const affectsExtractRegex = /(\d\w)|ks\.(\p{L}+).*|([\p{L}-]+).*/iu
 const extractDateFromHeaderRegex = /(\d?\d)\.(\d?\d)\.(\d{4})r\./
@@ -73,13 +74,19 @@ export const downloadAndParseSubstitutes = async (lastContent: string | undefine
 					const computed: ComputedLine = {
 						content: line,
 					}
-					let match = fullLineRegex.exec(line)
+
+					let match = lessonsCancelledRegex.exec(line)
 					if (match) {
-						computed.affects = [match[2], match[match[4] === 'zastępstwo' ? 3 : 4]]
+						computed.affects = [match[1]]
 					} else {
-						match = withoutClassRegex.exec(line)
+						match = fullLineRegex.exec(line)
 						if (match) {
-							computed.affects = [match[3]]
+							computed.affects = [match[2], match[match[4] === 'zastępstwo' ? 3 : 4]]
+						} else {
+							match = withoutClassRegex.exec(line)
+							if (match) {
+								computed.affects = [match[3]]
+							}
 						}
 					}
 
