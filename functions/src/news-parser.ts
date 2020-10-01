@@ -3,10 +3,10 @@ import { parse as parseHTML } from 'node-html-parser'
 
 const fullLineRegex = /^([0-9])\)\s*([a-z0-9]+)\s*-\s*([_\p{L} ]+)\s*-\s*([\p{L}\- .]+).*/iu
 const withoutClassRegex = /^([0-9])\)\s*([_\p{L} ]+)\s*-\s*([\p{L}\- ]+).*/iu
-const lessonsCancelledRegex = /^[0-9]\)\s+([a-z0-9]+)\s.*zajęcia odwołane.*$/
+const lessonsCancelledRegex = /^[0-9]\)\s*([a-z0-9]+)\s.*zajęcia odwołane.*$/
 const ignoreLineRegex = /wycieczka|rekolekcje|wyjazd|pielgrzymka/iu
 const affectsExtractRegex = /(\d\w)|ks\.(\p{L}+).*|([\p{L}-]+).*/iu
-const extractDateFromHeaderRegex = /(\d?\d)\.(\d?\d)\.(\d{4})r\./
+const extractDateFromHeaderRegex = /(\d?\d)\.(\d?\d)\.(\d{4})(r\.)?/
 
 const tryToParseDate = (line: string) => {
 	const match = extractDateFromHeaderRegex.exec(line)
