@@ -1,6 +1,5 @@
 import fetch from 'node-fetch'
 import { HTMLElement, parse as parseHTML } from 'node-html-parser'
-import Node from 'node-html-parser/dist/nodes/node'
 import NodeType from 'node-html-parser/dist/nodes/type'
 
 const BASE_LINK = 'http://sp2dobczyce.pl/planlekcji/'
@@ -100,7 +99,8 @@ export const downloadTimetable = async (info: TimetableInfo): Promise<Timetable>
 	const response = await fetch(info.link)
 	if (!response.ok) throw new Error('Cannot download timetable, status=' + response.status)
 
-	const dom = parseHTML(await response.text())
+	const text = await response.text()
+	const dom = parseHTML(text)
 	const rows = dom.querySelectorAll('tr tr').slice(0, -1)
 	if (!rows.length)
 		throw new Error('Rows in timetable not found')
@@ -129,11 +129,6 @@ export const downloadTimetable = async (info: TimetableInfo): Promise<Timetable>
 			let lesson: Lesson | null = null
 			const nodes = cell.childNodes
 			// .filter(e => e.nodeType === NodeType.ELEMENT_NODE) as HTMLElement[]
-
-			const isTag = (element: Node, name: string): boolean => {
-				return element.nodeType === NodeType.ELEMENT_NODE && (element as HTMLElement).tagName === name
-			}
-
 			if (!cell.rawText.trim())
 				lesson = {data: undefined, day, number}
 			else if (!!cell.querySelector('br')
@@ -163,52 +158,45 @@ export const downloadTimetable = async (info: TimetableInfo): Promise<Timetable>
 						}
 						break
 					case 7:
-						if (isTag(nodes[0], 'span')
-							&& isTag(nodes[1], 'br')
-							&& isTag(nodes[2], 'span')
-							&& nodes[3].nodeType === NodeType.TEXT_NODE
-							&& isTag(nodes[4], 'span')
-							&& nodes[5].nodeType === NodeType.TEXT_NODE
-							&& isTag(nodes[6], 'a')) {
-							lesson = {
-								number, day,
-								data: [
-									{
-										subject: nodes[0].childNodes[0].rawText,
-										teacher: nodes[0].childNodes[2].rawText,
-										classroom: nodes[0].childNodes[4].rawText,
-									},
-									{
-										subject: nodes[2].rawText + nodes[3].rawText + nodes[4].rawText,
-										teacher: '',
-										classroom: nodes[6].rawText,
-									},
-								],
-							}
-						} else if (isTag(nodes[0], 'span')
-							&& nodes[1].nodeType === NodeType.TEXT_NODE
-							&& isTag(nodes[2], 'span')
-							&& nodes[3].nodeType === NodeType.TEXT_NODE
-							&& isTag(nodes[4], 'a')
-							&& isTag(nodes[5], 'br')
-							&& isTag(nodes[6], 'span')) {
-							lesson = {
-								number, day,
-								data: [
-									{
-										subject: nodes[0].rawText + nodes[1].rawText + nodes[2].rawText,
-										teacher: '',
-										classroom: '',
-									},
-									{
-										subject: nodes[6].childNodes[0].rawText,
-										teacher: nodes[6].childNodes[2].rawText,
-										classroom: nodes[6].childNodes[4].rawText,
-									},
-								],
-							}
-						} else {
-							throw new Error('cells: 7, invalid schema')
+						const schema = nodes.map(e => e.nodeType === NodeType.ELEMENT_NODE ? (e as HTMLElement).tagName : 'text').join(',').toUpperCase()
+
+						switch (schema) {
+							case 'SPAN,BR,SPAN,TEXT,SPAN,TEXT,A':
+								lesson = {
+									number, day,
+									data: [
+										{
+											subject: nodes[0].childNodes[0].rawText,
+											teacher: nodes[0].childNodes[2].rawText,
+											classroom: nodes[0].childNodes[4].rawText,
+										},
+										{
+											subject: nodes[2].rawText + nodes[3].rawText + nodes[4].rawText,
+											teacher: '',
+											classroom: nodes[6].rawText,
+										},
+									],
+								}
+								break
+							case 'SPAN,TEXT,SPAN,TEXT,A,BR,SPAN':
+								lesson = {
+									number, day,
+									data: [
+										{
+											subject: nodes[0].rawText + nodes[1].rawText + nodes[2].rawText,
+											teacher: '',
+											classroom: '',
+										},
+										{
+											subject: nodes[6].childNodes[0].rawText,
+											teacher: nodes[6].childNodes[2].rawText,
+											classroom: nodes[6].childNodes[4].rawText,
+										},
+									],
+								}
+								break
+							default:
+								throw new Error('cells: 7, invalid schema, ' + schema)
 						}
 						break
 					case 3:
