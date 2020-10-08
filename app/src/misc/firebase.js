@@ -43,8 +43,7 @@ if (location.hostname === 'localhost') {
 } else
     config.fetchAndActivate().then(e => e && console.info('Activated new config'));
 
-firestore.enablePersistence().catch(e => console.error(e.message));
-
+firestore.enablePersistence({synchronizeTabs: true}).catch(e => console.error(e.message));
 
 let sending = false;
 export const sendTokenToServer = (onlyIfDifferent) => {
