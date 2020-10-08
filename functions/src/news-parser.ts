@@ -1,11 +1,11 @@
-import { default as fetch } from 'node-fetch'
+import fetch from 'node-fetch'
 import { parse as parseHTML } from 'node-html-parser'
 
-const fullLineRegex = /^([0-9])[)\s]\s*([a-z0-9]+)\s*-\s*([_\p{L} ]+)\s*-\s*([\p{L}\- .]+).*/iu
+const fullLineRegex = /^([0-9])[)\s]\s*([a-z0-9\/]+)\s*-\s*([_\p{L} ]+)\s*-\s*([\p{L}\- .]+).*/iu
 const withoutClassRegex = /^([0-9])[)\s]\s*([_\p{L} ]+)\s*-\s*([\p{L}\- ]+).*/iu
-const lessonsCancelledRegex = /^[0-9][)\s]\s*([a-z0-9]+)\s.*zajęcia odwołane.*$/
+const lessonsCancelledRegex = /^[0-9][)\s]\s*([a-z0-9\/]+)\s.*zajęcia odwołane.*$/
 const ignoreLineRegex = /wycieczka|rekolekcje|wyjazd|pielgrzymka/iu
-const affectsExtractRegex = /(\d\w)|ks\.(\p{L}+).*|([\p{L}-]+).*/iu
+const affectsExtractRegex = /(\d\w[\d\w\-\/]{0,6})|ks\.(\p{L}+).*|([\p{L}-]+).*/iu
 const extractDateFromHeaderRegex = /(\d?\d)\.(\d?\d)\.(\d{4})(r\.)?/
 
 const tryToParseDate = (line: string) => {
@@ -13,6 +13,23 @@ const tryToParseDate = (line: string) => {
 	if (!match) return
 	const millis = Date.parse(`${match[3]}-${match[2]}-${match[1]}`)
 	return !!millis ? new Date(millis) : null
+}
+
+const getAffectsStringsFromPart = (part: string): string[] => {
+	let match = /^(\d[a-z])([\/\-](\d[a-z]))?$/u.exec(part)
+	if (match) {
+		if (match[3])
+			return [match[1], match[3]]
+		else
+			return [match[1]]
+	}
+	match = /^(\d)([a-z]+)$/u.exec(part)
+	if (match) {
+		const classNumber = match[1]
+		return match[2].split('').map(e => classNumber + e)
+	}
+
+	return [part]
 }
 
 interface ComputedLine {
@@ -91,12 +108,16 @@ export const downloadAndParseSubstitutes = async (lastContent: string | undefine
 					}
 
 
-					if (computed.affects)
-						computed.affects = computed.affects.map(value => {
+					if (computed.affects) {
+						const realAffects: string[] = []
+						computed.affects.forEach(value => {
 							const results = affectsExtractRegex.exec(value)
-							return (results ? results[1] || results[2] || results[3] || value : value).toLowerCase()
+							realAffects.push(...getAffectsStringsFromPart(
+								(results ? results[1] || results[2] || results[3] || value : value).toLowerCase()))
 						})
 
+						computed.affects = realAffects
+					}
 
 					computedLines.push(computed)
 				}
